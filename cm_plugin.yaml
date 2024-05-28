@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-plugin-config
+  namespace: argocd
+data:
+  plugin.yaml: |
+    apiVersion: argoproj.io/v1alpha1
+    kind: ConfigManagementPlugin
+    metadata:
+      name: my-plugin
+    spec:
+      init:
+        command: [sh, -c, 'echo "Initializing..."']
+      generate:
+        command:
+          - sh
+          - -c
+          - |
+            manifests=$(for file in $(find . -name "*.yaml"); do cat $file; echo "---"; done | sed '$d' | base64 | tr -d '\n')
+            cat <<EOF
+            {
+              "apiVersion": "tower.ansible.com/v1alpha1",
+              "kind": "AnsibleJob",
+              "metadata": {
+                "name": "$ARGOCD_APP_NAME",
+                "namespace": "$ARGOCD_APP_NAMESPACE"
+              },
+              "spec": {
+                "connection_secret": "awxaccess",
+                "inventory": "Demo Inventory",
+                "job_template_name": "Demo Maestro Template",
+                "extra_vars": {
+                  "target_cluster": "$ARGOCD_ENV_TARGET_CLUSTER",
+                  "work_manifests": "$manifests"
+                }
+              }
+            }
+            EOF
