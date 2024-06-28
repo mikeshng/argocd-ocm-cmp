@@ -295,7 +295,7 @@ spec:
           name: plugins
       - name: my-plugin
         command: [/var/run/argocd/argocd-cmp-server]
-        image: busybox
+        image: bitnami/kubectl
         securityContext:
           runAsNonRoot: true
           runAsUser: 999

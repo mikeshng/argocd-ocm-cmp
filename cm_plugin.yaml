@@ -17,23 +17,19 @@ data:
           - sh
           - -c
           - |
-            manifests=$(for file in $(find . -name "*.yaml"); do cat $file; echo "---"; done | sed '$d' | base64 | tr -d '\n')
-            cat <<EOF
-            {
-              "apiVersion": "tower.ansible.com/v1alpha1",
-              "kind": "AnsibleJob",
-              "metadata": {
-                "name": "$ARGOCD_APP_NAME",
-                "namespace": "$ARGOCD_APP_NAMESPACE"
-              },
-              "spec": {
-                "connection_secret": "awxaccess",
-                "inventory": "Demo Inventory",
-                "job_template_name": "Demo Maestro Template",
-                "extra_vars": {
-                  "target_cluster": "$ARGOCD_ENV_TARGET_CLUSTER",
-                  "work_manifests": "$manifests"
-                }
-              }
-            }
-            EOF
+            output_file="generated_manifestwork"
+            echo "apiVersion: work.open-cluster-management.io/v1" > $output_file
+            echo "kind: ManifestWork" >> $output_file
+            echo "metadata:" >> $output_file
+            echo "  name: ${ARGOCD_APP_NAME}" >> $output_file
+            echo "  namespace: ${ARGOCD_ENV_TARGET_CLUSTER}" >> $output_file
+            echo "spec:" >> $output_file
+            echo "  workload:" >> $output_file
+            echo "    manifests:" >> $output_file
+            for file in $(find . -name "*.yaml"); do
+              if [ -s $file ]; then
+                echo "    -" >> $output_file
+                cat $file | sed 's/^/      /' >> $output_file
+              fi
+            done
+            cat $output_file

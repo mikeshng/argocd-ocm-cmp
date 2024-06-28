@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: 'https://github.com/argoproj/argocd-example-apps.git'
+    repoURL: 'https://github.com/mikeshng/argocd-ocm-cmp.git'
     targetRevision: HEAD
     path: guestbook
     plugin:
@@ -20,5 +20,3 @@ spec:
   syncPolicy:
     automated:
       prune: true
-    syncOptions:
-      - CreateNamespace=true
